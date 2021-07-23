@@ -21,7 +21,7 @@ def Train(args):
     with open(log_path,'a',encoding='utf-8') as f:
         print(args,file=f)
         f.writelines("\n"+"========== Training log: ==========\n")
-    dataset = PASDataset(dataset_path=args.dataset_path,imsize=256, sparse=90)
+    dataset = PASDataset(dataset_path=args.dataset_path,imsize=256, sparse=1)
     loader = DataLoader(dataset,batch_size=args.batch_size,shuffle=True,num_workers=16)
     class_name = os.path.basename(args.dataset_path)
 
@@ -61,8 +61,8 @@ def Train(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default='8')
-    parser.add_argument('--epochs', type=int, default='1')
+    parser.add_argument('--batch_size', type=int, default='16')
+    parser.add_argument('--epochs', type=int, default='100')
     parser.add_argument('--dataset_path', type=str, default='dataset/SHTech', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
