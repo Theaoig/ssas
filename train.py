@@ -35,18 +35,21 @@ def Train(args):
     for epoch in range(args.epochs):
         model.train()
         for i, (img,gt_mask,gt_label) in enumerate(loader):
+            img=img.to(args.device)
+            gt_mask=gt_mask.to(args.device)
+            gt_label=gt_label.to(args.device)
             optimizer.zero_grad()
-            pred_label,pred_mask=model(img.to(args.device))
+            pred_label,pred_mask=model(img)
             
-            loss=label_loss(pred_label,gt_label.to(args.device).detach())+mask_loss(pred_mask,gt_mask.to(args.device).detach())
+            loss=label_loss(pred_label,gt_label.detach())+mask_loss(pred_mask,gt_mask.detach())
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
             if i==0:
                 B,*_=img.shape
-                print(img.shape,gt_mask.shape)
-                gt_mask=repeat(gt_mask, 'b c h w -> b (re c) h w', re=3)
-                sample = torch.cat([img, gt_mask], 0)
+                m1=repeat(gt_mask, 'b c h w -> b (repeat c) h w', repeat=3)
+                m2=repeat(pred_mask, 'b c h w -> b (repeat c) h w', repeat=3)
+                sample = torch.cat([img, m1, m2], 0)
                 torchvision.utils.save_image(sample, 
                     os.path.join(sample_path,"{}_{}.jpg".format(class_name,epoch+1)),
                     nrow=B,
