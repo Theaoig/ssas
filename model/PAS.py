@@ -1,5 +1,10 @@
 import torch
-from . cbam import CBAM
+try:
+    from . cbam import CBAM
+    from . dbnet import DBHead
+except:
+    from cbam import CBAM
+    from dbnet import DBHead
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 
 class Merge(torch.nn.Module):
@@ -10,12 +15,9 @@ class Merge(torch.nn.Module):
     """
     def __init__(self, dim):
         super().__init__()
-        self.upsample_2=torch.nn.Sequential(torch.nn.ConvTranspose2d(dim, dim, 4, 2, 1),torch.nn.LeakyReLU(0.2))
-        self.upsample_4=torch.nn.Sequential(torch.nn.ConvTranspose2d(dim, dim, 4, 4, 0),torch.nn.LeakyReLU(0.2))
-        self.upsample_8=torch.nn.Sequential(torch.nn.ConvTranspose2d(dim, dim, 4, 2, 1),
-                                            torch.nn.ConvTranspose2d(dim, dim, 4, 4, 0),
-                                            torch.nn.LeakyReLU(0.2))
-        self.attn=CBAM(dim*4)
+        self.upsample_2=torch.nn.Sequential(torch.nn.UpsamplingBilinear2d(scale_factor=2))
+        self.upsample_4=torch.nn.Sequential(torch.nn.UpsamplingBilinear2d(scale_factor=4))
+        self.upsample_8=torch.nn.Sequential(torch.nn.UpsamplingBilinear2d(scale_factor=8))
         
         for mm in self.children():
             for m in mm.children():
@@ -31,7 +33,6 @@ class Merge(torch.nn.Module):
         fea2=self.upsample_4(features['2'])
         fea3=self.upsample_8(features['3'])
         feature=torch.cat([fea0,fea1,fea2,fea3],dim=1)
-        feature=self.attn(feature)
         return feature
 
 class Predictor(torch.nn.Module):
@@ -42,9 +43,9 @@ class Predictor(torch.nn.Module):
     """
     def __init__(self, dim):
         super().__init__()
-        self.upsample_4=torch.nn.Sequential(torch.nn.ConvTranspose2d(dim, dim//4, 4, 4, 0),torch.nn.LeakyReLU(0.2))
-        self.mask_predict=torch.nn.Sequential(torch.nn.Conv2d(dim//4, 1, 1, 1, 0),torch.nn.Sigmoid())
-        self.label_predict=torch.nn.Sequential(torch.nn.Flatten(1,-1),torch.nn.Linear(dim,dim//4),torch.nn.Linear(dim//4,1),torch.nn.Sigmoid())
+        self.upsample_4=torch.nn.Sequential(torch.nn.UpsamplingBilinear2d(scale_factor=4),torch.nn.LeakyReLU(0.2))
+        self.mask_predict=torch.nn.Sequential(torch.nn.Conv2d(dim, 1, 1, 1, 0),torch.nn.Sigmoid())
+        self.label_predict=torch.nn.Sequential(torch.nn.Flatten(1,-1),torch.nn.Linear(dim,1),torch.nn.Sigmoid())
         
         for mm in self.children():
             for m in mm.children():
@@ -67,31 +68,31 @@ class PAS(torch.nn.Module):
     Args:
         torch (None Args): None
     """
-    def __init__(self):
+    def __init__(self,feature_dim=256):
         super(PAS, self).__init__()
         self.backbone=resnet_fpn_backbone('resnet50', True, trainable_layers=0)
-        self.merge=Merge(dim=256)
-        self.predictor=Predictor(dim=1024)
+        self.merge=Merge(dim=feature_dim)
+        self.mask_predictor=DBHead(4*feature_dim,1)
         
     def forward(self,x):
         multiscal_features=self.backbone(x)
         feature=self.merge(multiscal_features)
-        pred_mask=self.predictor(feature)
-        return pred_mask
+        pred_mask=self.mask_predictor(feature)
+        return pred_mask,None
         
 if __name__=="__main__":
     net=PAS().to('cuda')
     x=torch.randn((10,3,256,256)).to('cuda')
-    label,mask=net(x)
-    print(label.shape,mask.shape)
+    mask,_=net(x)
+    print(mask.shape)
     
     label_loss=torch.nn.BCELoss()
-    mask_loss=torch.nn.L1Loss()
+    mask_loss=torch.nn.SmoothL1Loss() #torch.nn.L1Loss()
     
     label_target=torch.empty(10, 1).random_(2).to('cuda')
     mask_target=torch.empty(10,1,256,256).random_(2).to('cuda')
     
-    print(label_loss(label,label_target),mask_loss(mask,mask_target))
+    print(mask_loss(mask,mask_target))
     
     
     
