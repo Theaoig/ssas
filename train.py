@@ -45,7 +45,7 @@ def Train(args):
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
-            sys.stdout.write("\r=> iters: {} - {}, loss:{:.4f} - {:.4f}".format(epoch,i,mask_loss(pred_mask,gt_mask.detach()).item(),0))
+            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch,i,mask_loss(pred_mask,gt_mask.detach()).item(),0))
             sys.stdout.flush()
             if i==0:
                 B,*_=img.shape
@@ -58,7 +58,7 @@ def Train(args):
                     normalize=True,
                     range=(-1, 1),)
         with open(log_path,'a',encoding='utf-8') as f:
-            f.writelines("=> {}th epoch done, loss: {:.4f}, lr:{:.5f}".format(epoch+1,loss.item(),lr))
+            f.writelines("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}".format(epoch+1,loss.item(),lr))
         print("saving model...")
         torch.save(model.state_dict(), os.path.join(ckpt_path,"last.pt"))
         if loss.item() < best_loss:
