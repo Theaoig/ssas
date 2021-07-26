@@ -57,9 +57,9 @@ def Train(args):
                     nrow=B,
                     normalize=True,
                     range=(-1, 1),)
+        print(" ")
         with open(log_path,'a',encoding='utf-8') as f:
             f.writelines("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}".format(epoch+1,loss.item(),lr))
-        print("saving model...")
         torch.save(model.state_dict(), os.path.join(ckpt_path,"last.pt"))
         if loss.item() < best_loss:
             best_loss = loss.item()
