@@ -62,14 +62,14 @@ class Predictor(torch.nn.Module):
         mask=self.mask_predict(x)
         return label,mask
 
-class PAS(torch.nn.Module):
+class PMAS(torch.nn.Module):
     """presude anomaly segementation
 
     Args:
         torch (None Args): None
     """
     def __init__(self,feature_dim=256):
-        super(PAS, self).__init__()
+        super(PMAS, self).__init__()
         self.backbone=resnet_fpn_backbone('resnet50', True, trainable_layers=0)
         self.merge=Merge(dim=feature_dim)
         self.mask_predictor=DBHead(4*feature_dim,1)
@@ -81,7 +81,7 @@ class PAS(torch.nn.Module):
         return pred_mask,None
         
 if __name__=="__main__":
-    net=PAS().to('cuda')
+    net=PMAS().to('cuda')
     x=torch.randn((10,3,256,256)).to('cuda')
     mask,_=net(x)
     print(mask.shape)

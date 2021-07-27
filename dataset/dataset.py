@@ -54,7 +54,7 @@ def generate_presudo_mask(origin_img,element_path,mask_path):
     
     return origin_img,origin_mask,torch.tensor([1]).float()
 
-class PASDataset(Dataset):
+class PMASDataset(Dataset):
     def __init__(self,dataset_path='./SHTech',imsize=256, sparse=1,
                  mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
         self.dataset_path = dataset_path

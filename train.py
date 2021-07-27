@@ -2,8 +2,8 @@ import torch,torchvision,argparse,os,sys,einops
 from torch.utils.data import DataLoader
 from datetime import datetime
 
-from model.PAS import PAS
-from dataset.dataset import PASDataset
+from model.pmas import PMAS
+from dataset.dataset import PMASDataset
 
 
 def Train(args):
@@ -21,11 +21,11 @@ def Train(args):
         f.writelines("========== Start Training at {} ==========\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         print(args,file=f)
     print(args)
-    dataset = PASDataset(dataset_path=args.dataset_path,imsize=256, sparse=1)
+    dataset = PMASDataset(dataset_path=args.dataset_path,imsize=256, sparse=1)
     loader = DataLoader(dataset,batch_size=args.batch_size,shuffle=True,num_workers=16)
     class_name = os.path.basename(args.dataset_path)
 
-    model = PAS().to(args.device)
+    model = PMAS().to(args.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.init_lr)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     
@@ -45,7 +45,7 @@ def Train(args):
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
-            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch,i,mask_loss(pred_mask,gt_mask.detach()).item(),0))
+            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch+1,i,mask_loss(pred_mask,gt_mask.detach()).item(),0))
             sys.stdout.flush()
             if i==0:
                 B,*_=img.shape
@@ -59,7 +59,7 @@ def Train(args):
                     range=(-1, 1),)
         print(" ")
         with open(log_path,'a',encoding='utf-8') as f:
-            f.writelines("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}".format(epoch+1,loss.item(),lr))
+            f.writelines("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}\n".format(epoch+1,loss.item(),lr))
         torch.save(model.state_dict(), os.path.join(ckpt_path,"last.pt"))
         if loss.item() < best_loss:
             best_loss = loss.item()
