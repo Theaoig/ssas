@@ -26,7 +26,12 @@ def Train(args):
     class_name = os.path.basename(args.dataset_path)
 
     model = PMAS().to(args.device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.init_lr)
+    if os.path.exists(args.weights):
+        model.load_state_dict(torch.load(args.weights))
+        with open(log_path,'a',encoding='utf-8') as f:
+            f.writelines("=> reload weights from {} \n".format(args.weights))
+        
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     
     label_loss=torch.nn.BCELoss()
@@ -76,7 +81,8 @@ if __name__=="__main__":
     parser.add_argument('--dataset_path', type=str, default='dataset/SHTech', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
-    parser.add_argument('--init_lr', type=float, default='1e-4', help='init learning rate')
+    parser.add_argument('--lr', type=float, default='1e-4', help='init learning rate')
+    parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
     args=parser.parse_args()
 
     Train(args)
