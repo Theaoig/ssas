@@ -94,7 +94,7 @@ if __name__=="__main__":
     parser.add_argument('--pools',type=int, default=1, help='max pool num')
     parser.add_argument('--video', action='store_true', help='save result to video')
 
-    parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt', help='model.pt path(s)')
     parser.add_argument('--imsize', type=int, default=256, help='inference size (pixels)')
     parser.add_argument('--device', default='cuda', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
 
