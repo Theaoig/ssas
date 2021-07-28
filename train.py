@@ -13,7 +13,6 @@ def Train(args):
     ckpt_path=os.path.join(args.save_path,'checkpoint')
     sample_path=os.path.join(args.save_path,'train_samples')
     log_path=os.path.join(args.save_path,"train_log.log")
-
     os.makedirs(sample_path, exist_ok=True)
     os.makedirs(ckpt_path, exist_ok=True)
     
@@ -27,16 +26,18 @@ def Train(args):
 
     model = PMAS().to(args.device)
     if os.path.exists(args.weights):
-        model.load_state_dict(torch.load(args.weights))
+        weights,best_loss=torch.load(args.weights)
+        model.load_state_dict(weights)
         with open(log_path,'a',encoding='utf-8') as f:
             f.writelines("=> reload weights from {} \n".format(args.weights))
+    else:
+        best_loss=10**5
         
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     
     label_loss=torch.nn.BCELoss()
     mask_loss=torch.nn.SmoothL1Loss()
-    best_loss=10**5
     for epoch in range(args.epochs):
         model.train()
         for i, (img,gt_mask,gt_label) in enumerate(loader):
@@ -65,10 +66,10 @@ def Train(args):
         print(" ")
         with open(log_path,'a',encoding='utf-8') as f:
             f.writelines("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}\n".format(epoch+1,loss.item(),lr))
-        torch.save(model.state_dict(), os.path.join(ckpt_path,"last.pt"))
+        torch.save([model.state_dict(),loss.item()], os.path.join(ckpt_path,"last.pt"))
         if loss.item() < best_loss:
             best_loss = loss.item()
-            torch.save(model.state_dict(), os.path.join(ckpt_path,"best.pt"))
+            torch.save([model.state_dict(),loss.item()], os.path.join(ckpt_path,"best.pt"))
         scheduler.step()
         
         
@@ -82,7 +83,7 @@ if __name__=="__main__":
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
     parser.add_argument('--lr', type=float, default='1e-4', help='init learning rate')
-    parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
+    parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt')
     args=parser.parse_args()
 
     Train(args)

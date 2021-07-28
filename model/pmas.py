@@ -68,9 +68,9 @@ class PMAS(torch.nn.Module):
     Args:
         torch (None Args): None
     """
-    def __init__(self,feature_dim=256):
+    def __init__(self,feature_dim=256,trainable_layers=0):
         super(PMAS, self).__init__()
-        self.backbone=resnet_fpn_backbone('resnet50', True, trainable_layers=0)
+        self.backbone=resnet_fpn_backbone('resnet50', True, trainable_layers=trainable_layers)
         self.merge=Merge(dim=feature_dim)
         self.mask_predictor=DBHead(4*feature_dim,1)
         

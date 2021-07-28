@@ -36,7 +36,7 @@ def main(args):
     # * load model
     a=time.time()
     model=PMAS().to(args.device)
-    model.load_state_dict(torch.load(args.weights))
+    model.load_state_dict(torch.load(args.weights)[0])
     model.eval()
     b=time.time()
     print("=> load model, cost:{:.2f}s".format(b-a))

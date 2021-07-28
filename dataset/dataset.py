@@ -29,8 +29,7 @@ def insert_obj_and_mask(origin_img,origin_mask,box_img,box_mask):
     for point in mask_area:
         try:
             origin_img[insert_position[0]+point[0],insert_position[1]+point[1]]=box_img[point[0],point[1]]
-            origin_mask[insert_position[0]+point[0],insert_position[1]+point[1]]=box_mask[point[0],point[1]]
-            origin_mask /= (origin_mask[np.unravel_index(origin_mask.argmax(), origin_mask.shape)])
+            origin_mask[insert_position[0]+point[0],insert_position[1]+point[1]]=255
         except:
             pass
 
