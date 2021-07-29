@@ -18,7 +18,7 @@ def random_img_augment(img):
     return new_img
 
 class CoCoPseudoMask:
-    """one can input actual img path and it's mask path, or input img path and it's annotation path
+    """one can input actual img path and it's mask path, or input img path and it's Json annotation path
     """
     def __init__(self,pseudo_img='dataset/SHTech/element',pseudo_mask='dataset/SHTech/mask',random_agument=False):
         super(CoCoPseudoMask, self).__init__()
