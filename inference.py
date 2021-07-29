@@ -1,14 +1,16 @@
 import os,sys,natsort,argparse,time,subprocess,cv2
 import torch,torchvision,einops
 import numpy as np
-from PIL import Image
+from PIL import Image,ImageFilter
 from torchvision import transforms as T
 from datetime import datetime
 from multiprocessing import Pool
 from model.pmas import PMAS
 
 def ae_preprocess(img_path,im_size,device):
-    img=Image.open(img_path).convert('RGB')
+    img = cv2.imread(img_path)
+    img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+    img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
     trans=T.Compose([T.Resize((im_size,im_size), Image.ANTIALIAS),
                 T.ToTensor(),T.Normalize(mean=[0.5,0.5,0.5],std=[0.5,0.5,0.5])])
     img=trans(img)

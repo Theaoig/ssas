@@ -31,13 +31,17 @@ class CoCoPseudoMask:
         origin_mask=np.zeros_like(origin_img)
         if insert_times == 0:
             return origin_img,origin_mask,torch.tensor([0]).float()
-        for i in range(insert_times):
-            box_img,box_mask=self.get_random_box_and_mask()
-            a=random.randint(int(0.2*origin_img.shape[0]),int(0.4*origin_img.shape[0]))
-            b=random.randint(int(0.1*origin_img.shape[1]),int(0.15*origin_img.shape[1]))
-            box_img=cv2.resize(box_img,(a,b))
-            box_mask=cv2.resize(box_mask,(a,b))
-            origin_img,origin_mask=self.insert_box_and_mask(origin_img,origin_mask,box_img,box_mask)
+        while insert_times>0:
+            try:
+                box_img,box_mask=self.get_random_box_and_mask()
+                a=random.randint(int(0.2*origin_img.shape[0]),int(0.4*origin_img.shape[0]))
+                b=random.randint(int(0.1*origin_img.shape[1]),int(0.15*origin_img.shape[1]))
+                box_img=cv2.resize(box_img,(a,b))
+                box_mask=cv2.resize(box_mask,(a,b))
+                origin_img,origin_mask=self.insert_box_and_mask(origin_img,origin_mask,box_img,box_mask)
+                insert_times-=1
+            except:
+                pass
         
         return origin_img,origin_mask,torch.tensor([1]).float()
     
