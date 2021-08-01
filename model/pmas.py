@@ -5,6 +5,7 @@ try:
 except:
     from cbam import CBAM
     from dbnet import DBHead
+import numpy as np
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 
 class Merge(torch.nn.Module):
@@ -41,11 +42,14 @@ class Predictor(torch.nn.Module):
     Args:
         torch (int): feature channel number
     """
-    def __init__(self, dim):
+    def __init__(self, dim, db_K):
         super().__init__()
-        self.upsample_4=torch.nn.Sequential(torch.nn.UpsamplingBilinear2d(scale_factor=4),torch.nn.LeakyReLU(0.2))
-        self.mask_predict=torch.nn.Sequential(torch.nn.Conv2d(dim, 1, 1, 1, 0),torch.nn.Sigmoid())
-        self.label_predict=torch.nn.Sequential(torch.nn.Flatten(1,-1),torch.nn.Linear(dim,1),torch.nn.Sigmoid())
+        self.db_K=db_K
+        self.mask_predictor=DBHead(dim,1,db_K)
+        self.label_predictor=torch.nn.Sequential(torch.nn.Flatten(1,-1),
+                                                 torch.nn.Linear(dim,dim//4),torch.nn.BatchNorm1d(dim//4),torch.nn.ReLU(inplace=True),
+                                                 torch.nn.Linear(dim//4,dim//4),torch.nn.BatchNorm1d(dim//4),torch.nn.ReLU(inplace=True),
+                                                 torch.nn.Linear(dim//4,2),torch.nn.Sigmoid())
         
         for mm in self.children():
             for m in mm.children():
@@ -56,11 +60,17 @@ class Predictor(torch.nn.Module):
                     m.inplace=True
                 
     def forward(self,x):
+        mask=self.mask_predictor(x)
         *_,W=x.size()
-        label=self.label_predict(torch.nn.AvgPool2d(W,1)(x))
-        x=self.upsample_4(x)
-        mask=self.mask_predict(x)
-        return label,mask
+        # x=x+(torch.nn.AvgPool2d(4,4)(mask)*x)
+        temp=self.label_predictor(torch.nn.AvgPool2d(W,1)(x))
+        thresh=temp[:,0]
+        label=temp[:,1]
+        label=self.step_function(label,thresh)
+        return mask,label[:,np.newaxis]
+
+    def step_function(self, x, y):
+        return torch.reciprocal(1 + torch.exp(-self.db_K * (x - y)))
 
 class PMAS(torch.nn.Module):
     """presude anomaly segementation
@@ -68,23 +78,24 @@ class PMAS(torch.nn.Module):
     Args:
         torch (None Args): None
     """
-    def __init__(self,feature_dim=256,trainable_layers=0):
+    def __init__(self,feature_dim=256,trainable_layers=0,db_K=50):
         super(PMAS, self).__init__()
         self.backbone=resnet_fpn_backbone('resnet50', True, trainable_layers=trainable_layers)
         self.merge=Merge(dim=feature_dim)
-        self.mask_predictor=DBHead(4*feature_dim,1)
+        self.predictor=Predictor(dim=4*feature_dim,db_K=db_K)
+        
         
     def forward(self,x):
         multiscal_features=self.backbone(x)
         feature=self.merge(multiscal_features)
-        pred_mask=self.mask_predictor(feature)
-        return pred_mask,None
+        mask,label=self.predictor(feature)
+        return mask,label
         
 if __name__=="__main__":
     net=PMAS().to('cuda')
     x=torch.randn((10,3,256,256)).to('cuda')
-    mask,_=net(x)
-    print(mask.shape)
+    mask,label=net(x)
+    print(mask.shape,label.shape)
     
     label_loss=torch.nn.BCELoss()
     mask_loss=torch.nn.SmoothL1Loss() #torch.nn.L1Loss()
@@ -92,7 +103,7 @@ if __name__=="__main__":
     label_target=torch.empty(10, 1).random_(2).to('cuda')
     mask_target=torch.empty(10,1,256,256).random_(2).to('cuda')
     
-    print(mask_loss(mask,mask_target))
+    print(mask_loss(mask,mask_target),label_loss(label,label_target))
     
     
     

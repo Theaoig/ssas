@@ -27,11 +27,11 @@ class CoCoPseudoMask:
         self.random_agument=random_agument
         
     def __call__(self,origin_img):
-        insert_times=random.randint(0,2)
+        insert_times=random.randint(0,3)
         origin_mask=np.zeros_like(origin_img)
-        if insert_times == 0:
+        if insert_times <= 1:
             return origin_img,origin_mask,torch.tensor([0]).float()
-        while insert_times>0:
+        while insert_times>1:
             try:
                 box_img,box_mask=self.get_random_box_and_mask()
                 a=random.randint(int(0.2*origin_img.shape[0]),int(0.4*origin_img.shape[0]))

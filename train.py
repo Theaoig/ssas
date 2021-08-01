@@ -46,13 +46,14 @@ def Train(args):
             gt_mask=gt_mask.to(args.device)
             gt_label=gt_label.to(args.device)
             optimizer.zero_grad()
-            pred_mask,_=model(img)
             
-            loss=mask_loss(pred_mask,gt_mask.detach())#+0.1*label_loss(pred_label,gt_label.detach())
+            pred_mask,pred_label=model(img)
+            
+            loss=mask_loss(pred_mask,gt_mask.detach())+0.1*label_loss(pred_label,gt_label.detach())
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
-            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch+1,i,mask_loss(pred_mask,gt_mask.detach()).item(),0))
+            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch+1,i,mask_loss(pred_mask,gt_mask.detach()).item(),0.1*label_loss(pred_label,gt_label.detach())))
             sys.stdout.flush()
             if i==0:
                 B,*_=img.shape
@@ -79,13 +80,13 @@ def Train(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default='16')
-    parser.add_argument('--epochs', type=int, default='100')
+    parser.add_argument('--batch_size', type=int, default='32')
+    parser.add_argument('--epochs', type=int, default='50')
     parser.add_argument('--dataset_path', type=str, default='/data/VAD/SHTech', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
-    parser.add_argument('--lr', type=float, default='1e-4', help='init learning rate')
-    parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt')
+    parser.add_argument('--lr', type=float, default='1e-5', help='init learning rate')
+    parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
     args=parser.parse_args()
 
     Train(args)

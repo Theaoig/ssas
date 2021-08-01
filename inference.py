@@ -65,7 +65,7 @@ def main(args):
     with torch.no_grad():
         for index,img_name in enumerate(img_List):
             x=ae_preprocess(os.path.join(args.input,img_name),args.imsize,args.device)
-            mask,_=model(x)
+            mask,label=model(x)
             mask=einops.repeat(mask, 'b c h w -> b (repeat c) h w', repeat=3)
             result = torch.cat([x, mask], 0)
             torchvision.utils.save_image(result,
