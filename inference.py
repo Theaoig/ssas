@@ -69,7 +69,7 @@ def main(args):
             mask=einops.repeat(mask, 'b c h w -> b (repeat c) h w', repeat=3)
             result = torch.cat([x, mask], 0)
             torchvision.utils.save_image(result,
-                    os.path.join(args.output,img_name),
+                    os.path.join(args.output,img_name.split('.')[0]+"__{:.2f}-{:.2f}.jpg".format(label.item()*1000,1000*mask.mean().item())),
                     nrow=2,
                     normalize=True,
                     range=(-1, 1),)

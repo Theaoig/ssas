@@ -62,7 +62,7 @@ class Predictor(torch.nn.Module):
     def forward(self,x):
         mask=self.mask_predictor(x)
         *_,W=x.size()
-        # x=x+(torch.nn.AvgPool2d(4,4)(mask)*x)
+        x=x+(torch.nn.AvgPool2d(4,4)(mask)*x)
         temp=self.label_predictor(torch.nn.AvgPool2d(W,1)(x))
         thresh=temp[:,0]
         label=temp[:,1]
