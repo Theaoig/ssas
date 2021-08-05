@@ -95,11 +95,12 @@ class CoCoPseudoMask:
         return box_img,box_mask
         
 class PMASDataset(Dataset):
-    def __init__(self,dataset_path='/data/VAD/SHTech',imsize=256, sparse=1,
+    def __init__(self,dataset_path='/data/VAD/SHTech',imsize=256, sparse=1, phase="train",
                  mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
         self.dataset_path = dataset_path
         self.imsize=imsize
         self.sparse=sparse
+        self.phase=phase
         self.transform_img=T.Compose([T.Resize((imsize,imsize), Image.ANTIALIAS),T.ToTensor(),
                                       T.Normalize(mean=mean,std=std)])
         self.transform_mask=T.Compose([T.Resize((imsize,imsize), Image.ANTIALIAS),T.ToTensor()])
@@ -107,21 +108,29 @@ class PMASDataset(Dataset):
         self.all_imgs = self.load_dataset_folder()
 
     def __getitem__(self, idx):
-        img = cv2.imread(self.all_imgs[idx])
-        img,mask,label = self.generate_presudo_mask(img)
-        img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
-        img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
-        img = self.transform_img(img)
-        mask = mask[:,:,0]
-        mask = self.transform_mask(Image.fromarray(mask))
-        return img,mask,label
+        if self.phase=="train":
+            img = cv2.imread(self.all_imgs[idx])
+            img,mask,label = self.generate_presudo_mask(img)
+            img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+            img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
+            img = self.transform_img(img)
+            mask = mask[:,:,0]
+            mask = self.transform_mask(Image.fromarray(mask))
+            return img,mask,label
+        else:
+            img = cv2.imread(self.all_imgs[idx])
+            img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+            img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
+            img = self.transform_img(img)
+            return img
 
     def __len__(self):
         return len(self.all_imgs)
 
     def load_dataset_folder(self):
         imgs = []
-        folder_dir = os.path.join(self.dataset_path, "training","frames")
+        phase="training" if self.phase=="train" else "testing"
+        folder_dir = os.path.join(self.dataset_path,phase,"frames")
         for folder_name in natsort.natsorted(os.listdir(folder_dir)):
             img_dir=os.path.join(folder_dir,folder_name)
             img_fpath_list = natsort.natsorted([os.path.join(img_dir, f)
