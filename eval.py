@@ -35,8 +35,8 @@ def evaluation(model,dataset_path,batch_size,im_size,device,slide_avg=0.25):
     map_list=[]
     map_gt=[]
     with torch.no_grad():
-        for i, (img,mask,label) in tqdm(enumerate(loader),"=> processing evaluation",total=None):
-            img=img.to(args.device)
+        for i, (img,mask,label) in tqdm(enumerate(loader),"=> processing evaluation"):
+            img=img.to(device)
             pred_mask,pred_label=model(img)
 
             score_list+=pred_label.cpu().detach().flatten().tolist()
@@ -59,7 +59,7 @@ def main(args):
 if __name__=="__main__":
     torch.multiprocessing.set_start_method('spawn')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec/capsule', help='dataset path')
+    parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec', help='dataset path')
     parser.add_argument('--batch_size', type=int, default='32')
     parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt', help='model.pt path(s)')
     parser.add_argument('--imsize', type=int, default=256, help='inference size (pixels)')

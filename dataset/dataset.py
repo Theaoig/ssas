@@ -141,8 +141,8 @@ class PMASDataset(Dataset):
         return list(imgs)
 
 class MVTecDataset(Dataset):
-    def __init__(self,dataset_path='/data/VAD/mvtec/capsule',imsize=256, phase="train",
-                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
+    def __init__(self,dataset_path='/data/VAD/mvtec',imsize=256,phase="train",
+                 class_name=None,mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]):
         self.dataset_path = dataset_path
         self.imsize=imsize
         self.phase=phase
@@ -150,8 +150,14 @@ class MVTecDataset(Dataset):
                                       T.Normalize(mean=mean,std=std)])
         self.transform_mask=T.Compose([T.Resize((imsize,imsize), Image.NEAREST),T.ToTensor()])
         self.generate_presudo_mask=CoCoPseudoMask("/data/coco/images/val","/data/coco/annotations/instances_val2017.json")
+        
+        all=['cable', 'leather', 'transistor', 'hazelnut', 'pill', 'wood',
+             'toothbrush', 'bottle', 'zipper', 'carpet', 'screw', 
+             'tile', 'metal_nut', 'grid', 'capsule']
+        self.class_list = class_name.split(',') if class_name in all else all
+        
         self.x,self.y,self.mask = self.load_dataset_folder()
-
+        
     def __getitem__(self, idx):
         if self.phase=="train":
             img = cv2.imread(self.x[idx])
@@ -183,36 +189,41 @@ class MVTecDataset(Dataset):
         return len(self.x)
 
     def load_dataset_folder(self):
-        x, y, mask = [], [], []
+        X, Y, Mask = [], [], []
+        for class_name in self.class_list:
+            x, y, mask = [], [], []
 
-        img_dir = os.path.join(self.dataset_path, self.phase)
-        gt_dir = os.path.join(self.dataset_path, 'ground_truth')
+            img_dir = os.path.join(self.dataset_path, class_name, self.phase)
+            gt_dir = os.path.join(self.dataset_path, class_name, 'ground_truth')
 
-        img_types = sorted(os.listdir(img_dir))
-        for img_type in img_types:
+            img_types = sorted(os.listdir(img_dir))
+            for img_type in img_types:
 
-            # load images
-            img_type_dir = os.path.join(img_dir, img_type)
-            if not os.path.isdir(img_type_dir):
-                continue
-            img_fpath_list = sorted([os.path.join(img_type_dir, f)
-                                    for f in os.listdir(img_type_dir)
-                                    if f.endswith(('.jpg','.png'))])
-            x.extend(img_fpath_list)
+                # load images
+                img_type_dir = os.path.join(img_dir, img_type)
+                if not os.path.isdir(img_type_dir):
+                    continue
+                img_fpath_list = sorted([os.path.join(img_type_dir, f)
+                                        for f in os.listdir(img_type_dir)
+                                        if f.endswith(('.jpg','.png'))])
+                x.extend(img_fpath_list)
 
-            # load gt labels
-            if img_type == 'good':
-                y.extend([0] * len(img_fpath_list))
-                mask.extend([None] * len(img_fpath_list))
-            else:
-                y.extend([1] * len(img_fpath_list))
-                gt_type_dir = os.path.join(gt_dir, img_type)
-                img_fname_list = [os.path.splitext(os.path.basename(f))[0] for f in img_fpath_list]
-                gt_fpath_list = [os.path.join(gt_type_dir, img_fname + '_mask.png')
-                                for img_fname in img_fname_list]
-                mask.extend(gt_fpath_list)
-
-        assert len(x) == len(y), 'number of x and y should be same'
-        return list(x), list(y), list(mask)
+                # load gt labels
+                if img_type == 'good':
+                    y.extend([0] * len(img_fpath_list))
+                    mask.extend([None] * len(img_fpath_list))
+                else:
+                    y.extend([1] * len(img_fpath_list))
+                    gt_type_dir = os.path.join(gt_dir, img_type)
+                    img_fname_list = [os.path.splitext(os.path.basename(f))[0] for f in img_fpath_list]
+                    gt_fpath_list = [os.path.join(gt_type_dir, img_fname + '_mask.png')
+                                    for img_fname in img_fname_list]
+                    mask.extend(gt_fpath_list)
+            X.extend(x)
+            Y.extend(y)
+            Mask.extend(mask)
+            
+        assert len(X) == len(Y), 'number of x and y should be same'
+        return list(X), list(Y), list(Mask)
 
     
