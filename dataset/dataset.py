@@ -27,11 +27,11 @@ class CoCoPseudoMask:
         self.random_agument=random_agument
         
     def __call__(self,origin_img):
-        insert_times=random.randint(0,3)
+        insert_times=random.randint(0,1)
         origin_mask=np.zeros_like(origin_img)
-        if insert_times <= 1:
+        if insert_times <= 0:
             return origin_img,origin_mask,torch.tensor([0]).float()
-        while insert_times>1:
+        while insert_times>0:
             try:
                 box_img,box_mask=self.get_random_box_and_mask()
                 a=random.randint(int(0.2*origin_img.shape[0]),int(0.4*origin_img.shape[0]))
@@ -111,7 +111,7 @@ class PMASDataset(Dataset):
         if self.phase=="train":
             img = cv2.imread(self.all_imgs[idx])
             img,mask,label = self.generate_presudo_mask(img)
-            img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+            img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
             img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
             img = self.transform_img(img)
             mask = mask[:,:,0]
@@ -162,7 +162,7 @@ class MVTecDataset(Dataset):
         if self.phase=="train":
             img = cv2.imread(self.x[idx])
             img,mask,label = self.generate_presudo_mask(img)
-            img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
+            # img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
             img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
             img = self.transform_img(img)
             mask = mask[:,:,0]

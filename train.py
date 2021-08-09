@@ -80,8 +80,8 @@ def Train(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default='32')
-    parser.add_argument('--epochs', type=int, default='50')
+    parser.add_argument('--batch_size', type=int, default='40')
+    parser.add_argument('--epochs', type=int, default='100')
     parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec', help='dataset path')
     parser.add_argument('--imsize', type=int, default='256')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
