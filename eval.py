@@ -60,7 +60,7 @@ if __name__=="__main__":
     torch.multiprocessing.set_start_method('spawn')
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec/capsule', help='dataset path')
-    parser.add_argument('--batch_size', type=int, default='2')
+    parser.add_argument('--batch_size', type=int, default='32')
     parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt', help='model.pt path(s)')
     parser.add_argument('--imsize', type=int, default=256, help='inference size (pixels)')
     parser.add_argument('--device', default='cuda', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')

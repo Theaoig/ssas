@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from datetime import datetime
 
 from model.pmas import PMAS
-from dataset.dataset import PMASDataset
+from dataset.dataset import MVTecDataset
 
 
 def Train(args):
@@ -20,7 +20,7 @@ def Train(args):
         f.writelines("========== Start Training at {} ==========\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         print(args,file=f)
     print(args)
-    dataset = PMASDataset(dataset_path=args.dataset_path,imsize=256, sparse=10)
+    dataset = MVTecDataset(dataset_path=args.dataset_path,imsize=256, phase="train")
     print(len(dataset))
     loader = DataLoader(dataset,batch_size=args.batch_size,shuffle=True,num_workers=16)
     class_name = os.path.basename(args.dataset_path)
@@ -49,7 +49,7 @@ def Train(args):
             
             pred_mask,pred_label=model(img)
             
-            loss=mask_loss(pred_mask,gt_mask.detach())+0.1*label_loss(pred_label,gt_label.detach())
+            loss=mask_loss(pred_mask,gt_mask.detach())#+0.1*label_loss(pred_label,gt_label.detach())
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
@@ -82,7 +82,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default='32')
     parser.add_argument('--epochs', type=int, default='50')
-    parser.add_argument('--dataset_path', type=str, default='/data/VAD/SHTech', help='dataset path')
+    parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec/capsule', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
     parser.add_argument('--lr', type=float, default='1e-5', help='init learning rate')
