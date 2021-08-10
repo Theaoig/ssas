@@ -66,7 +66,13 @@ class DBHead(nn.Module):
         return torch.reciprocal(1 + torch.exp(-self.k * (x - y)))
     
 if __name__=="__main__":
-    net=DBHead(1024,1).to('cuda')
-    x=torch.randn((10,1024,64,64)).to('cuda')
-    mask=net(x)
-    print(mask.shape)
+    net=DBHead(1024,1)
+    x=torch.randn((10,1024,64,64))
+    x=nn.Conv2d(1024, 1024 // 4, 3, padding=1)(x)
+    print(x.shape)
+    x=nn.ConvTranspose2d(1024 // 4, 1024 // 4, 2, 2)(x)
+    print(x.shape)
+    x=nn.Conv2d(1024//4, 1024 // 4, 3, padding=1)(x)
+    print(x.shape)
+    x=nn.ConvTranspose2d(1024 // 4, 1, 2, 2)(x)
+    print(x.shape)
