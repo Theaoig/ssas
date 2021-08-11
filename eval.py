@@ -55,14 +55,11 @@ def evaluation(model,dataset_path,batch_size,im_size,device,slide_avg=0.25):
             Pixel_gt+=map_gt
 
         print("=> {} inference done, calculating AUC...".format(class_name))
-        print(len(Img_score),len(Img_gt))
-        print(len(Pixel_score),len(Pixel_gt))
         fpr,tpr, _ = roc_curve(Img_gt,Img_score)
         img_auc = roc_auc_score(Img_gt,Img_score)
         AUC1.append(img_auc)
         fig_img_rocauc.plot(fpr, tpr, label='%s ROCAUC: %.3f' % (class_name, img_auc))
         fig_img_rocauc.legend(loc="lower right")
-        print(max(Pixel_gt),min(Pixel_gt))
         fpr,tpr, _ = roc_curve(Pixel_gt,Pixel_score)
         pix_auc = roc_auc_score(Pixel_gt,Pixel_score)
         AUC2.append(pix_auc)
