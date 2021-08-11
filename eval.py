@@ -22,7 +22,7 @@ def normalize_psnr(psnr_list,inverse=False):
     return result
 
 def evaluation(model,dataset_path,batch_size,im_size,device,slide_avg=0.25):
-    all=['01','02']
+    all=['01','02','03','04','05','06','07','08','09','10','11','12']
     fig, ax = plt.subplots(1, 2, figsize=(20, 10))
     fig_img_rocauc = ax[0]
     fig_pixel_rocauc = ax[1]
@@ -35,11 +35,8 @@ def evaluation(model,dataset_path,batch_size,im_size,device,slide_avg=0.25):
             dataset = PMASDataset(dataset_path=dataset_path,imsize=im_size, phase="test",class_name=folder)
             loader = DataLoader(dataset,batch_size=batch_size,shuffle=False,num_workers=16)
             print("=> '{}' total num: {}".format(folder,len(dataset)))
-            score_list=[]
-            gt_list=[]
-
-            map_list=[]
-            map_gt=[]
+            
+            score_list,gt_list,map_list,map_gt=[],[],[],[]
             with torch.no_grad():
                 for i, (img,mask,label) in tqdm(enumerate(loader),"=> processing evaluation"):
                     img=img.to(device)

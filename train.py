@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from datetime import datetime
 
 from model.pmas import PMAS
-from dataset.dataset import MVTecDataset
+from dataset.dataset import PMASDataset
 
 
 def Train(args):
@@ -20,7 +20,7 @@ def Train(args):
         f.writelines("========== Start Training at {} ==========\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         print(args,file=f)
     print(args)
-    dataset = MVTecDataset(dataset_path=args.dataset_path,imsize=args.imsize, phase="train")
+    dataset = PMASDataset(dataset_path=args.dataset_path,imsize=args.imsize, phase="train", sparse=10)
     print(len(dataset))
     loader = DataLoader(dataset,batch_size=args.batch_size,shuffle=True,num_workers=16)
     class_name = os.path.basename(args.dataset_path)
@@ -82,7 +82,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default='40')
     parser.add_argument('--epochs', type=int, default='100')
-    parser.add_argument('--dataset_path', type=str, default='/data/VAD/mvtec', help='dataset path')
+    parser.add_argument('--dataset_path', type=str, default='/data/VAD/SHTech', help='dataset path')
     parser.add_argument('--imsize', type=int, default='256')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
