@@ -30,7 +30,7 @@ def Train(args):
         weights,best_loss=torch.load(args.weights)
         model.load_state_dict(weights)
         with open(log_path,'a',encoding='utf-8') as f:
-            f.writelines("=> reload weights from {} \n".format(args.weights))
+            f.writelines("=> reload weights from {}, loss: {} \n".format(args.weights,best_loss))
     else:
         best_loss=10**5
         
