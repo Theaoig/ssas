@@ -65,6 +65,41 @@ class DBHead(nn.Module):
     def step_function(self, x, y):
         return torch.reciprocal(1 + torch.exp(-self.k * (x - y)))
     
+class FCDBHead(nn.Module):
+    def __init__(self, in_channels, out_channels=1, k = 50):
+        super().__init__()
+        self.k = k
+        self.classfy = nn.Sequential(nn.Flatten(1,-1),
+            nn.Linear(in_channels,in_channels//4),nn.BatchNorm1d(in_channels//4),nn.ReLU(inplace=True),
+            nn.Linear(in_channels//4,in_channels//4),nn.BatchNorm1d(in_channels//4),nn.ReLU(inplace=True),
+            nn.Linear(in_channels//4,out_channels),nn.Sigmoid())
+        self.classfy.apply(self.weights_init)
+
+        self.thresh = nn.Sequential(nn.Flatten(1,-1),
+            nn.Linear(in_channels,in_channels//4),nn.BatchNorm1d(in_channels//4),nn.ReLU(inplace=True),
+            nn.Linear(in_channels//4,in_channels//4),nn.BatchNorm1d(in_channels//4),nn.ReLU(inplace=True),
+            nn.Linear(in_channels//4,out_channels),nn.Sigmoid())
+        self.thresh.apply(self.weights_init)
+
+    def forward(self, x):
+        *_,size=x.size()
+        x=torch.nn.AvgPool2d(size,1)(x)
+        score = self.classfy(x)
+        threshold = self.thresh(x)
+        binary_label = self.step_function(score, threshold)
+        return binary_label
+
+    def weights_init(self, m):
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1:
+            nn.init.kaiming_normal_(m.weight.data)
+        elif classname.find('BatchNorm') != -1:
+            m.weight.data.fill_(1.)
+            m.bias.data.fill_(1e-4)
+            
+    def step_function(self, x, y):
+        return torch.reciprocal(1 + torch.exp(-self.k * (x - y)))
+    
 if __name__=="__main__":
     net=DBHead(1024,1)
     x=torch.randn((10,1024,64,64))
