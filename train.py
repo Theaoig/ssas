@@ -49,7 +49,7 @@ def Train(args):
             
             pred_mask,pred_label=model(img)
             
-            loss=mask_loss(pred_mask,gt_mask.detach())+0.05*label_loss(pred_label,gt_label.detach())
+            loss=mask_loss(pred_mask,gt_mask.detach())+0.1*label_loss(pred_label,gt_label.detach())
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
