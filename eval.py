@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from dataset.dataset import PMASDataset
 from torch.utils.data import DataLoader
 
-
+    
 def normalize_psnr(psnr_list,inverse=False):
     result=[]
     Max=max(psnr_list)
@@ -76,6 +76,23 @@ def main(args):
     model.eval()
     img_auc,pix_auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device)
     print("=> average image auc: {:.3f}, average pixel auc: {:.3f}.\n".format(img_auc,pix_auc))
+    
+def exam_mask_and_gt():
+    """run this func to show that score from mask is equally with ground truth
+    """
+    Image_score=[]
+    for folder in sorted(os.listdir(os.path.join("/data/VAD/SHTech","testing","frames"))):
+        mask=np.load("/data/VAD/SHTech/testing/test_pixel_mask/{}.npy".format(folder))
+        print(folder,mask.shape)
+        for i in range(mask.shape[0]):
+            score=1 if mask[i,:,:].sum()>0 else 0
+            Image_score.append(score)    
+
+    Image_gt=np.load("/data/VAD/frame_labels_shanghai.npy")
+    print(len(Image_gt),len(Image_score))
+
+    auc=roc_auc_score(Image_gt,Image_score)
+    print("ROCAUC:",auc)
     
 if __name__=="__main__":
     torch.multiprocessing.set_start_method('spawn')
