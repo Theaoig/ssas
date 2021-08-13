@@ -41,7 +41,7 @@ class Predictor(torch.nn.Module):
                 
     def forward(self,x):
         mask=self.mask_predictor(x)
-        x=x+(torch.nn.AvgPool2d(4,4)(mask)*x)
+        # x=x+(torch.nn.AvgPool2d(4,4)(mask)*x)
         label=self.label_predictor(x)
         return mask,label
 
@@ -57,8 +57,13 @@ class PMAS(torch.nn.Module):
         self.merge=Merge()
         self.predictor=Predictor(dim=4*feature_dim)
         
-        
     def forward(self,x):
+        # if self.training:
+        #     std=0.005
+        # else:
+        #     std=0.0
+        # noise=torch.tensor(np.random.normal(loc=0, scale=std, size=x.shape))
+        # x=x+noise.type(torch.FloatTensor).to(x.device)
         multiscal_features=self.backbone(x)
         feature=self.merge(multiscal_features)
         mask,label=self.predictor(feature)

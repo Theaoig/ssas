@@ -114,7 +114,7 @@ class PMASDataset(Dataset):
         if self.phase=="train":
             img = cv2.imread(self.all_imgs[idx])
             img,mask,label = self.generate_presudo_mask(img)
-            img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
+            # img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
             img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
             img = self.transform_img(img)
             mask = mask[:,:,0]
