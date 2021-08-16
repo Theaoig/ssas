@@ -101,20 +101,19 @@ class PMASDataset(Dataset):
         self.imsize=imsize
         self.sparse=sparse
         self.phase=phase
-        self.class_name=class_name
         self.transform_img=T.Compose([T.Resize((imsize,imsize), Image.ANTIALIAS),T.ToTensor(),
                                       T.Normalize(mean=mean,std=std)])
         self.transform_mask=T.Compose([T.Resize((imsize,imsize), Image.NEAREST),T.ToTensor()])
         self.generate_presudo_mask=CoCoPseudoMask("/data/coco/images/val","/data/coco/annotations/instances_val2017.json")
         
         self.class_list = class_name.split(',') if class_name is not None else None
-        self.all_imgs, self.masks = self.load_dataset_folder()
+        self.all_imgs = self.load_dataset_folder()
 
     def __getitem__(self, idx):
         if self.phase=="train":
             img = cv2.imread(self.all_imgs[idx])
             img,mask,label = self.generate_presudo_mask(img)
-            # img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
+            img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
             img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
             img = self.transform_img(img)
             mask = mask[:,:,0]
@@ -122,13 +121,10 @@ class PMASDataset(Dataset):
             return img,mask,label
         else:
             img = cv2.imread(self.all_imgs[idx])
-            img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+            img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
             img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
             img = self.transform_img(img)
-            mask = self.masks[idx,:,:]
-            label=torch.tensor([1]).float() if mask.sum()>0 else torch.tensor([0]).float()
-            mask = self.transform_mask(Image.fromarray(255*mask))
-            return img,mask,label
+            return img
 
     def __len__(self):
         return len(self.all_imgs)
@@ -147,13 +143,7 @@ class PMASDataset(Dataset):
                                     and int(f.split('.')[0])%self.sparse==0 ])
             imgs.extend(img_fpath_list)
             
-            if phase=="testing":
-                temp=np.load("/data/VAD/SHTech/testing/test_pixel_mask/{}.npy".format(folder_name))
-                if isinstance(masks,list):
-                    masks=temp
-                else:
-                    masks=np.concatenate((masks,temp),axis=0)
-        return list(imgs),masks
+        return list(imgs)
 
 class MVTecDataset(Dataset):
     def __init__(self,dataset_path='/data/VAD/mvtec',imsize=256,phase="train",
