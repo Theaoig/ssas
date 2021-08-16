@@ -46,11 +46,13 @@ def evaluation(model,dataset_path,batch_size,im_size,device):
     return auc
     
 def main(args):
+    a=time.time()
     model=PMAS().to(args.device)
     model.load_state_dict(torch.load(args.weights)[0])
     model.eval()
     img_auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device)
     print("=> label auc: {:.3f}.\n".format(img_auc))
+    print("total cost: {:.2f}s".format(time.time()-a))
     
 def exam_mask_and_gt():
     """run this func to show that score from mask is equally with ground truth
