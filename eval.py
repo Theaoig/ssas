@@ -19,7 +19,7 @@ def moving_avg(score,K=0.35):
         score[i]=K*score[i]+(1-K)*score[i-1]
     return score
 
-def evaluation(model,dataset_path,batch_size,im_size,device,slide_avg=0.25):
+def evaluation(model,dataset_path,batch_size,im_size,device):
     select_path={"SHTech":"frame_labels_shanghai.npy"}
     gt_path=os.path.join("/data/VAD",select_path[os.path.basename(dataset_path)])
     
