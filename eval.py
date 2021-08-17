@@ -19,7 +19,7 @@ def moving_avg(score,K=0.35):
         score[i]=K*score[i]+(1-K)*score[i-1]
     return score
 
-def evaluation(model,dataset_path,batch_size,im_size,device):
+def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True):
     select_path={"SHTech":"frame_labels_shanghai.npy"}
     gt_path=os.path.join("/data/VAD",select_path[os.path.basename(dataset_path)])
     
@@ -31,19 +31,26 @@ def evaluation(model,dataset_path,batch_size,im_size,device):
     for folder in sorted(os.listdir(os.path.join(dataset_path,"testing","frames"))):
         dataset = PMASDataset(dataset_path=dataset_path,imsize=im_size, phase="test",class_name=folder)
         loader = DataLoader(dataset,batch_size=batch_size,shuffle=False,num_workers=16)
-        print("=> '{}' total num: {}".format(folder,len(dataset)))
+        if show_log:
+            print("=> '{}' total num: {}".format(folder,len(dataset)))
         
         score_list=[]
         with torch.no_grad():
-            for i, (img) in tqdm(enumerate(loader),"=> processing evaluation"):
-                img=img.to(device)
-                pred_mask,pred_label=model(img)
-                score_list+=pred_label.cpu().detach().flatten().tolist()
+            if show_log:
+                for i, (img) in tqdm(enumerate(loader),"=> processing evaluation"):
+                    img=img.to(device)
+                    pred_mask,pred_label=model(img)
+                    score_list+=pred_label.cpu().detach().flatten().tolist()
+            else:
+                for img in loader:
+                    img=img.to(device)
+                    pred_mask,pred_label=model(img)
+                    score_list+=pred_label.cpu().detach().flatten().tolist()
 
         Img_score+=normalize(moving_avg(score_list))
 
     auc=roc_auc_score(Img_gt,Img_score)
-    return auc
+    return round(auc,3)
     
 def main(args):
     a=time.time()

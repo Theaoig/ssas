@@ -130,7 +130,7 @@ class PMASDataset(Dataset):
         return len(self.all_imgs)
 
     def load_dataset_folder(self):
-        imgs,masks = [],[]
+        imgs = []
         phase="training" if self.phase=="train" else "testing"
         folder_dir = os.path.join(self.dataset_path,phase,"frames")
         for folder_name in natsort.natsorted(os.listdir(folder_dir)):
