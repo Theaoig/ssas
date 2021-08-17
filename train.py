@@ -31,7 +31,6 @@ def Train(args):
     model = PMAS().to(args.device)
     if os.path.exists(args.weights):
         weights,best_auc=torch.load(args.weights)
-        best_auc=0.65
         model.load_state_dict(weights)
         add_log("=> reload weights from {}, auc: {} \n".format(args.weights,best_auc),log_path)
     else:
