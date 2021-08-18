@@ -23,7 +23,7 @@ def Train(args):
     
     add_log("========== Start Training at {} ==========\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')),log_path)
     print(args)
-    dataset = PMASDataset(dataset_path=args.dataset_path,imsize=args.imsize, phase="train", sparse=10)
+    dataset = PMASDataset(dataset_path=args.dataset_path,imsize=args.imsize, phase="train", sparse=args.sparse)
     print("total {} imgs.".format(len(dataset)))
     loader = DataLoader(dataset,batch_size=args.batch_size,shuffle=True,num_workers=16)
     class_name = os.path.basename(args.dataset_path)
@@ -51,11 +51,11 @@ def Train(args):
             
             pred_mask,pred_label=model(img)
             
-            loss=mask_loss(pred_mask,gt_mask.detach())+0.05*label_loss(pred_label,gt_label.detach())
+            loss=mask_loss(pred_mask,gt_mask.detach())+args.lamdba_1*label_loss(pred_label,gt_label.detach())
             loss.backward()
             optimizer.step()
             lr = optimizer.param_groups[0]["lr"]
-            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch,i,mask_loss(pred_mask,gt_mask.detach()).item(),0.05*label_loss(pred_label,gt_label.detach())))
+            sys.stdout.write("\r=> iters: {} - {}, loss:{:.5f} - {:.5f}".format(epoch,i,mask_loss(pred_mask,gt_mask.detach()).item(),args.lamdba_1*label_loss(pred_label,gt_label.detach())))
             sys.stdout.flush()
             if i==0:
                 B,*_=img.shape
@@ -77,7 +77,7 @@ def Train(args):
             add_log("eval auc: {} \n".format(auc),log_path)
             if auc > best_auc:
                 best_auc = auc
-                torch.save([model.state_dict(),loss.item()], os.path.join(ckpt_path,"best.pt"))
+                torch.save([model.state_dict(),auc], os.path.join(ckpt_path,"best.pt"))
         scheduler.step()
         
         
@@ -88,10 +88,12 @@ if __name__=="__main__":
     parser.add_argument('--batch_size', type=int, default='40')
     parser.add_argument('--epochs', type=int, default='100')
     parser.add_argument('--dataset_path', type=str, default='/data/VAD/SHTech', help='dataset path')
+    parser.add_argument('--sparse', type=int, default='10')
     parser.add_argument('--imsize', type=int, default='256')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
     parser.add_argument('--lr', type=float, default='1e-5', help='init learning rate')
+    parser.add_argument('--lamdba_1', type=float, default='0.05')
     parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
     args=parser.parse_args()
 
