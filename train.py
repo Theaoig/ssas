@@ -36,8 +36,8 @@ def Train(args):
     else:
         best_auc=0
         
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10,30,60,90], gamma=0.1)
     
     label_loss=torch.nn.BCELoss()
     mask_loss=torch.nn.SmoothL1Loss()
@@ -69,9 +69,9 @@ def Train(args):
                     normalize=True,
                     range=(-1, 1),)
         print(" ")
-        add_log("=> {}th epoch done, loss: {:.5f}, lr:{:.5f}\n".format(epoch,loss.item(),lr),log_path)
+        add_log("=> {}th epoch done, loss: {:.6f}, lr:{:.6f}\n".format(epoch,loss.item(),lr),log_path)
         torch.save([model.state_dict(),loss.item()], os.path.join(ckpt_path,"last.pt"))
-        if epoch%5==0:
+        if epoch % args.eval_p==0:
             model.eval()
             auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device,False)
             add_log("eval auc: {} \n".format(auc),log_path)
@@ -92,9 +92,10 @@ if __name__=="__main__":
     parser.add_argument('--imsize', type=int, default='256')
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
-    parser.add_argument('--lr', type=float, default='1e-5', help='init learning rate')
+    parser.add_argument('--lr', type=float, default='1e-3', help='init learning rate')
     parser.add_argument('--lamdba_1', type=float, default='0.05')
     parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
+    parser.add_argument('--eval_p', type=int, default='5', help='eval period')
     args=parser.parse_args()
 
     Train(args)
