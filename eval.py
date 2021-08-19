@@ -32,19 +32,13 @@ def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True):
         loader = DataLoader(dataset,batch_size=batch_size,shuffle=False,num_workers=16)
         if show_log:
             print("=> '{}' total num: {}".format(folder,len(dataset)))
-        
+            loader=tqdm(enumerate(loader),"=> processing evaluation")
         score_list=[]
         with torch.no_grad():
-            if show_log:
-                for i, (img) in tqdm(enumerate(loader),"=> processing evaluation"):
-                    img=img.to(device)
-                    pred_mask,pred_label=model(img)
-                    score_list+=pred_label.cpu().detach().flatten().tolist()
-            else:
-                for img in loader:
-                    img=img.to(device)
-                    pred_mask,pred_label=model(img)
-                    score_list+=pred_label.cpu().detach().flatten().tolist()
+            for img in loader:
+                img=img[-1].to(device) if show_log else img.to(device)
+                pred_mask,pred_label=model(img)
+                score_list+=pred_label.cpu().detach().flatten().tolist()
 
         Img_score+=normalize(moving_avg(score_list))
 
