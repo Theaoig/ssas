@@ -85,7 +85,7 @@ def Train(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default='40')
+    parser.add_argument('--batch_size', type=int, default='32')
     parser.add_argument('--epochs', type=int, default='100')
     parser.add_argument('--dataset_path', type=str, default='/data/VAD/SHTech', help='dataset path')
     parser.add_argument('--sparse', type=int, default='10')
