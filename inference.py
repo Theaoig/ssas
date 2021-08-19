@@ -9,7 +9,7 @@ from model.pmas import PMAS
 
 def ae_preprocess(img_path,im_size,device):
     img = cv2.imread(img_path)
-    img = cv2.GaussianBlur(img, ksize=(5,5), sigmaX=0, sigmaY=0)
+    img = cv2.GaussianBlur(img, ksize=(3,3), sigmaX=0, sigmaY=0)
     img = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)).convert('RGB')
     trans=T.Compose([T.Resize((im_size,im_size), Image.ANTIALIAS),
                 T.ToTensor(),T.Normalize(mean=[0.5,0.5,0.5],std=[0.5,0.5,0.5])])
@@ -31,6 +31,18 @@ def merge_video(img_path):
             img = cv2.imread(item)
             video.write(img)        
     video.release()
+
+    output=img_path + ".mp4"
+    if os.path.exists(output):
+        sys_cmd="rm -rf {}".format(output)
+        child = subprocess.Popen(sys_cmd,shell=True)
+        child.wait()
+    sys_cmd="ffmpeg -i {} -b:v 500k {}".format(file_path,output)
+    child = subprocess.Popen(sys_cmd,shell=True)
+    child.wait()
+    sys_cmd="rm -rf {}".format(file_path)
+    child = subprocess.Popen(sys_cmd,shell=True)
+    child.wait()
 
 def main(args):
     print("=> main task started: {}".format(datetime.now().strftime('%H:%M:%S')))
@@ -69,7 +81,7 @@ def main(args):
             mask=einops.repeat(mask, 'b c h w -> b (repeat c) h w', repeat=3)
             result = torch.cat([x, mask], 0)
             torchvision.utils.save_image(result,
-                    os.path.join(args.output,img_name.split('.')[0]+"__{:.2f}-{:.2f}.jpg".format(label.item()*1000,1000*mask.mean().item())),
+                    os.path.join(args.output,img_name.split('.')[0]+"--{:.2f}.jpg".format(label.item())),
                     nrow=2,
                     normalize=True,
                     range=(-1, 1),)

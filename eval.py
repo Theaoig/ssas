@@ -1,10 +1,9 @@
-import os,sys,natsort,argparse,time,subprocess,cv2
+import os,sys,natsort,argparse,time,subprocess,cv2,pickle 
 import torch,torchvision,einops
 import numpy as np
 from tqdm import tqdm
 from model.pmas import PMAS
 from sklearn.metrics import roc_auc_score,roc_curve
-import matplotlib.pyplot as plt
 from dataset.dataset import PMASDataset
 from torch.utils.data import DataLoader
 
@@ -49,6 +48,8 @@ def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True):
 
         Img_score+=normalize(moving_avg(score_list))
 
+    with open(r"result/eval_result.pkl", "wb") as f:
+        pickle.dump([Img_gt,Img_score], f)
     auc=roc_auc_score(Img_gt,Img_score)
     return round(auc,3)
     
