@@ -18,7 +18,7 @@ def moving_avg(score,K=0.35):
         score[i]=K*score[i]+(1-K)*score[i-1]
     return score
 
-def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True):
+def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True,norm=False):
     select_path={"SHTech":"frame_labels_shanghai.npy"}
     gt_path=os.path.join("/data/VAD",select_path[os.path.basename(dataset_path)])
     
@@ -39,8 +39,10 @@ def evaluation(model,dataset_path,batch_size,im_size,device,show_log=True):
                 img=img[-1].to(device) if show_log else img.to(device)
                 pred_mask,pred_label=model(img)
                 score_list+=pred_label.cpu().detach().flatten().tolist()
-
-        Img_score+=normalize(moving_avg(score_list))
+        if norm:
+            Img_score+=normalize(moving_avg(score_list))
+        else:
+            Img_score+=score_list#normalize(moving_avg(score_list))
 
     with open(r"result/eval_result.pkl", "wb") as f:
         pickle.dump([Img_gt,Img_score], f)

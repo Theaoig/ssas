@@ -75,7 +75,7 @@ def Train(args):
         
         if epoch % args.eval_p == 0:
             model.eval()
-            auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device,False)
+            auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device,False,True)
             add_log("eval auc: {} \n".format(auc),log_path)
             if auc > best_auc:
                 best_auc = auc
