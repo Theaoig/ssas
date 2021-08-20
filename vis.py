@@ -32,7 +32,7 @@ for folder in sorted(os.listdir(test_folder)):
             auc=np.array(Img_score[left:right]).mean()
         print("=> {} has one class, fake auc: {:.3f}".format(folder,auc))
     
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(12,5))
     plt.title("{} AUC: {:.3f}".format(folder,auc))
     plt.plot(np.arange(0,length,1),Img_score[left:right])
     plt.plot(np.arange(0,length,1),Img_gt[left:right])
