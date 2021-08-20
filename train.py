@@ -1,4 +1,5 @@
 import torch,torchvision,argparse,os,sys,einops
+import numpy as np
 from torch.utils.data import DataLoader
 from datetime import datetime
 
@@ -71,7 +72,8 @@ def Train(args):
         print(" ")
         add_log("=> {}th epoch done, loss: {:.6f}, lr:{:.6f}\n".format(epoch,loss.item(),lr),log_path)
         torch.save([model.state_dict(),loss.item()], os.path.join(ckpt_path,"last.pt"))
-        if epoch % args.eval_p==0:
+        
+        if epoch % args.eval_p == 0:
             model.eval()
             auc=evaluation(model,args.dataset_path,args.batch_size,args.imsize,args.device,False)
             add_log("eval auc: {} \n".format(auc),log_path)
@@ -93,8 +95,8 @@ if __name__=="__main__":
     parser.add_argument('--save_path', type=str, default='result', help='path to save log and ckpt')
     parser.add_argument('--device', type=str, default='cuda', help='device number')
     parser.add_argument('--lr', type=float, default='1e-3', help='init learning rate')
-    parser.add_argument('--lamdba_1', type=float, default='0.05')
-    parser.add_argument('--weights', type=str, default='result/checkpoint/last.pt')
+    parser.add_argument('--lamdba_1', type=float, default='0.01')
+    parser.add_argument('--weights', type=str, default='result/checkpoint/best.pt')
     parser.add_argument('--eval_p', type=int, default='5', help='eval period')
     args=parser.parse_args()
 
