@@ -4,9 +4,13 @@
 
 This is a PyToch implementation of [A Novel Self-supervised Learning Task Designed for Anomaly Segmentation]().
 
-Our pseudo mask generator and anomaly segmentation framework:
+**Pseudo Mask Generator:**
 
- <img src="./demo/cocomask.png" width="300" />     <img src="./demo/DBAD.png" width="480" />
+ <img src="./demo/cocomask.png" width="500" />   
+
+**Anomaly Fegmentation Framework**
+
+  <img src="./demo/DBAD.png" width="600" />
 
 ### Contributions:
 
