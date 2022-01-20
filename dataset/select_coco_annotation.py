@@ -1,4 +1,4 @@
-import json,cv2,random,os
+import json,cv2,random,os,argparse
 import numpy as np
 from collections import OrderedDict
 
@@ -37,13 +37,15 @@ def label_select(annotation_path,image_dir,select_list,sample_ratio):
     return new_annotation
 
 if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image_dir', type=str, default="/data/coco/images/train")
+    parser.add_argument('--annotation_path', type=str, default="/data/coco/annotations/instances_train2017.json")
+    args=parser.parse_args()
+    
     select_names = ['person','bicycle','car','motorcycle','truck']
     sample_ratio = {'person':50,'bicycle':1,'car':9,'motorcycle':1,'truck':2}
 
-    annotation_path = "/data/coco/annotations/instances_train2017.json"
-    image_dir = "/data/coco/images/train"
-    
-    new_annotation=label_select(annotation_path,image_dir,select_names,sample_ratio)
+    new_annotation=label_select(args.annotation_path,args.image_dir,select_names,sample_ratio)
     print(new_annotation['distributions'])
     with open("selected_coco_annotation.json",'w') as load_f:    
         json.dump(new_annotation,load_f)
