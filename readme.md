@@ -34,10 +34,10 @@ This is a PyToch implementation of [A Novel Self-supervised Learning Task Design
 1. prepare environment:
 
    ```
-   conda create -n ssad python=3.7.6
-   conda activate ssad
+   conda create -n ssas python=3.7.6
+   conda activate ssas
    pip install -r requirements.txt
-   git clone https://github.com/wufan-tb/SSAS
+   git clone https://github.com/wufan-tb/ssas
    ```
 
 2. prepare coco pseudo mask:
@@ -77,10 +77,10 @@ This is a PyToch implementation of [A Novel Self-supervised Learning Task Design
 If you find our work useful, please cite as follow:
 
 ```
-{   SSAS,
+{   ssas,
     author = {Wu Fan},
     title = { Self-Supervised Anomaly Segmentation },
     year = {2021},
-    url = {\url{https://github.com/wufan-tb/SSAS}}
+    url = {\url{https://github.com/wufan-tb/ssas}}
 }
 ```
