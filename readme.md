@@ -2,7 +2,7 @@
 
 ## Intorduction
 
-This is a PyToch implementation of [A Novel Self-supervised Learning Task Designed for Anomaly Segmentation](), it contains two mainly parts, Pseudo Mask Generator and Anomaly Fegmentation Framework, as shown in next:
+This is a PyToch implementation of [A Novel Self-supervised Learning Task Designed for Anomaly Segmentation](), it contains two mainly parts, Pseudo Mask Generator and Anomaly Segmentation Framework, as shown in next:
 
 **Pseudo Mask Generator:**
 
