@@ -8,7 +8,7 @@ This is a PyToch implementation of [A Novel Self-supervised Learning Task Design
 
  <img src="./demo/cocomask.png" width="600" />   
 
-**Anomaly Fegmentation Framework:**
+**Anomaly Segmentation Framework:**
 
   <img src="./demo/DBAD.png" width="800" />
 
